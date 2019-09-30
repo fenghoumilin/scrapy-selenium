@@ -4,6 +4,7 @@
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
+import re
 
 from scrapy import signals
 from selenium import webdriver
@@ -112,32 +113,49 @@ class GdBankDownloaderMiddleware(object):
 class SeleniumDownloadMiddleware(object):
 
     def process_request(self, request, spider):
-        # options = Options()
-        # options.add_argument('--headless')
-        # driver = webdriver.Chrome(chrome_options=options)
-        driver = webdriver.Chrome()
+        options = Options()
+        options.add_argument('--headless')
+        driver = webdriver.Chrome(chrome_options=options)
+        # driver = webdriver.Chrome()
         driver.get(request.url)
         print("*"*120)
-        page = 0
+        page = -1
+        type = '个贷'
         try:
             page = request.meta['page']
+            type = request.meta['type']
             print("current page", page)
         except:
             print('page not exit')
         # print(source)
-        if page != 0:
+        time.sleep(5)
+        # if page == 0:
+        #     gjj = driver.find_element_by_xpath("//div[@class='net_main']//li[@class='se']//a")
+        #     if gjj is not None:
+        #         print(gjj)
+        #         gjj.click()
+        if page != -1:
             try:
-                time.sleep(5)
                 print("start")
-                button_list = driver.find_elements_by_xpath("//div[@class='page text_center']//a")
+                xpath = "//div[@id='gedai']//div[@class='page text_center']//a"
+                print("type", type)
+                if type == '公积金':
+                    xpath = "//div[@id='gongjijing']//div[@class='page text_center']//a"
+                    driver.find_elements_by_xpath("//div[@class='vcc-index_tab_main loan_tab_clear_float']//a")[1].click()
+                    time.sleep(1)
+                else:
+                    driver.find_elements_by_xpath("//div[@class='vcc-index_tab_main loan_tab_clear_float']//a")[0].click()
+                    time.sleep(1)
+                button_list = driver.find_elements_by_xpath(xpath)
                 print(button_list)
                 if button_list is not None:
                     for button in button_list:
                         button_num = 0
                         try:
-                            button_num = int(button.text)
+                            print("button", getFirstNumber(button.get_attribute('href')))
+                            button_num = getFirstNumber(button.get_attribute('href'))
                         except:
-                            print("next")
+                            print("next", button.get_attribute('href'))
                             continue
                         print("button_num", button_num)
                         if page == (button_num - 1):
@@ -146,7 +164,11 @@ class SeleniumDownloadMiddleware(object):
             except Exception as e:
                 print('error', e)
                 pass
-        time.sleep(5)
+        time.sleep(2)
         source = driver.page_source
         response = HtmlResponse(url=driver.current_url, body=source, request=request, encoding='utf-8')
         return response
+
+def getFirstNumber(str):
+    numList = re.findall(r"\d+", str)
+    return int(numList[0])

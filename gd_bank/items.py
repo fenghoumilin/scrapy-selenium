@@ -16,6 +16,8 @@ class GdBankItem(scrapy.Item):
     address = scrapy.Field()
     service_time = scrapy.Field()
     phone_number = scrapy.Field()
+    province = scrapy.Field()
+    type = scrapy.Field()
     created_time = scrapy.Field()
     pass
 
