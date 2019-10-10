@@ -116,7 +116,10 @@ class SeleniumDownloadMiddleware(object):
 
         if "http://tool.ccb.com/outlet/frontOprNodeQuery.gsp" in request.url:
             print("start")
-            driver = webdriver.Chrome()
+            options = Options()
+            options.add_argument('--headless')
+            driver = webdriver.Chrome(chrome_options=options)
+            # driver = webdriver.Chrome()
             driver.get(request.url)
             gd = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.XPATH, "//select[@id='province']//option[@value='440']")))

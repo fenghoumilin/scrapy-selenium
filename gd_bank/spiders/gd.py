@@ -19,7 +19,7 @@ class GdSpider(scrapy.Spider):
             total_page = re.findall(r"\d+", total_page[0])
             total_page = int(total_page[0])
             print("total_page = ", total_page)
-            for click_page in range(1, total_page+1):
+            for click_page in range(1, 2):
                 yield scrapy.Request(response.url, callback=self.parse_more, meta={'click_page': click_page},
                                      dont_filter=True)
         else:
@@ -44,17 +44,17 @@ class GdSpider(scrapy.Spider):
         current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
         for tr in trList:
             tdList = tr.xpath('.//td')
-            network = tdList[0].xpath("./text()").get()
+            name = tdList[0].xpath("./text()").get()
             address = tdList[1].xpath("./text()").extract()[0].strip()
             around = " ".join(tdList[2].xpath("./text()").extract())
             serviceTime = " ".join(tdList[3].xpath(".//text()").extract())
             phoneNumber = tdList[4].xpath("./text()").get()
             province = "广东"
             type = "operating"
-            print("network name = ", network)
+            print("network name = ", name)
             item = GdBankItem(
                 url=response.url,
-                network=network,
+                name=name,
                 address=address,
                 around=around,
                 service_time=serviceTime,
@@ -82,8 +82,8 @@ class GdSpider(scrapy.Spider):
         print("table_tr_count", table_tr_count)
         print("type = ", type)
         for tr in trList[0:table_tr_count]:
-            network = tr.xpath(".//td[@class='table_tr_1']/text()").get()
-            if network is None:
+            name = tr.xpath(".//td[@class='table_tr_1']/text()").get()
+            if name is None:
                 print("表头+1")
                 continue
             address = tr.xpath(".//td[@class='table_tr_2']/text()").get()
@@ -93,7 +93,7 @@ class GdSpider(scrapy.Spider):
             around = ""
             item = GdBankItem(
                 url=url,
-                network=network,
+                name=name,
                 address=address,
                 around=around,
                 service_time=serviceTime,
@@ -102,7 +102,7 @@ class GdSpider(scrapy.Spider):
                 type=type,
                 created_time=current_time
             )
-            print(network)
+            print("network name = ", name)
             # print(item)
             yield item
         # nameList = response.xpath("//div[@class='cbga']//a/text()").extract()
