@@ -42,7 +42,6 @@ DEFAULT_REQUEST_HEADERS = {
   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
   'Accept-Language': 'en',
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36",
-    'Cookie':"null=891486986.20480.0000; cityName=%E4%B8%8A%E6%B5%B7%E5%B8%82; cityCode=310000; bankName=%E4%B8%8A%E6%B5%B7%E5%B8%82%E5%88%86%E8%A1%8C; bankCode=310000000; ticket=; cs_cid=; custName=; userType=; lastLoginTime=; cityCodeFlag=2; ccbcustomid=25cfabb5c9c4903fgP8mJ8wRX3ti7ZOmsY5l1569294593633De97HMGXsOAhk2zwtScc2596d68feb122685ce8967401bd38736; ccbdatard=1; cookieidTagFlag=1; tagInfoId=%26_000094%3D1%26_000050%3D09; center123=1; ccbsessionid=w9809B7ZaZU0a5ca61c5172cfd0-20190926163911; diffTime2=-9915; lastUpdateTime=2019-09-26%2016%3A43%3A44; JSESSIONID=FrJw3LDy5CIILbezaFrRP_ai_xZE00y3eA1GSnqb37Vi-dN_natc!1031700443; INFO=9j9e|XY2IY; tranFAVOR=JdCiogbCsTo%2Clm6QWbM%2Cwm7Qhbo%2CQmkQob8%2C7m9QZbu%2CAm%2CQqbY%2CefjefeKQJAr5ho",
 }
 
 # Enable or disable spider middlewares

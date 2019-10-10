@@ -7,28 +7,64 @@ from gd_bank.items import GdBankItem
 class GdSpider(scrapy.Spider):
     name = 'gd'
     allowed_domains = ['ccb.com']
-    start_urls = ['http://www.ccb.com/cn/home/map/netPersonalLoan.html?provinceCode=440000']
-    # http://www.ccb.com/cn/home/map/netPersonalLoan.html?provinceCode=310000 广东个贷网点
+    start_urls = ['http://tool.ccb.com/outlet/frontOprNodeQuery.gsp']
     # http://www.ccb.com/cn/home/map/netPersonalLoan.html?provinceCode=440000 广东公积金贷款网点
 
     def parse(self, response):
 
-        print("parse")
-        aHref = response.xpath("//div[@id='gedai']//div[@class='page text_center']//a/@href").extract_first()
-        print("aHref", aHref)
-        sum_list = re.findall(r"\d+", aHref)
-        total = int(sum_list[-1])
-        # 爬取个贷
-        for current in range(0, total):
-            yield scrapy.Request(response.url, callback=self.parse_content, meta={'page': current, 'type': '个贷'}, dont_filter=True)
-        # 爬取公积金
-        aHref = response.xpath("//div[@id='gongjijing']//div[@class='page text_center']//a/@href").extract_first()
-        print("aHref", aHref)
-        sum_list = re.findall(r"\d+", aHref)
-        total = int(sum_list[-1])
-        for current in range(0, total):
-            yield scrapy.Request(response.url, callback=self.parse_content, meta={'page': current, 'type': '公积金'}, dont_filter=True)
+        if "http://tool.ccb.com/outlet/frontOprNodeQuery.gsp" in response.url:
+            print("coming")
+            total_page = response.xpath("//div[@id='cen']//form//ul//li[@class='num']/text()").extract()
+            print("total_page = ", total_page)
+            total_page = re.findall(r"\d+", total_page[0])
+            total_page = int(total_page[0])
+            print("total_page = ", total_page)
+            for click_page in range(1, total_page+1):
+                yield scrapy.Request(response.url, callback=self.parse_more, meta={'click_page': click_page},
+                                     dont_filter=True)
+        else:
+            print("parse")
+            aHref = response.xpath("//div[@id='gedai']//div[@class='page text_center']//a/@href").extract_first()
+            print("aHref", aHref)
+            sum_list = re.findall(r"\d+", aHref)
+            total = int(sum_list[-1])
+            # 爬取个贷
+            for current in range(0, total):
+                yield scrapy.Request(response.url, callback=self.parse_content, meta={'page': current, 'type': '个贷'}, dont_filter=True)
+            # 爬取公积金
+            aHref = response.xpath("//div[@id='gongjijing']//div[@class='page text_center']//a/@href").extract_first()
+            print("aHref", aHref)
+            sum_list = re.findall(r"\d+", aHref)
+            total = int(sum_list[-1])
+            for current in range(0, total):
+                yield scrapy.Request(response.url, callback=self.parse_content, meta={'page': current, 'type': '公积金'}, dont_filter=True)
 
+    def parse_more(self, response):
+        trList = response.xpath("//div[@id='cen']//div[@class='cen_data']//tbody//tr[position()>1]")
+        current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+        for tr in trList:
+            tdList = tr.xpath('.//td')
+            network = tdList[0].xpath("./text()").get()
+            address = tdList[1].xpath("./text()").extract()[0].strip()
+            around = " ".join(tdList[2].xpath("./text()").extract())
+            serviceTime = " ".join(tdList[3].xpath(".//text()").extract())
+            phoneNumber = tdList[4].xpath("./text()").get()
+            province = "广东"
+            type = "operating"
+            print("network name = ", network)
+            item = GdBankItem(
+                url=response.url,
+                network=network,
+                address=address,
+                around=around,
+                service_time=serviceTime,
+                phone_number=phoneNumber,
+                province=province,
+                type=type,
+                created_time=current_time
+            )
+            print("item = ", item)
+            yield item
     def parse_content(self, response):
         type = '个贷'
         try:
@@ -54,10 +90,12 @@ class GdSpider(scrapy.Spider):
             serviceTime = tr.xpath(".//td[@class='net_workTime']/text()").get()
             phoneNumber = tr.xpath(".//td[@class='table_tr_4']/text()").get()
             province = '广东'
+            around = ""
             item = GdBankItem(
                 url=url,
                 network=network,
                 address=address,
+                around=around,
                 service_time=serviceTime,
                 phone_number=phoneNumber,
                 province=province,

@@ -113,12 +113,46 @@ class GdBankDownloaderMiddleware(object):
 class SeleniumDownloadMiddleware(object):
 
     def process_request(self, request, spider):
+
+        if "http://tool.ccb.com/outlet/frontOprNodeQuery.gsp" in request.url:
+            print("start")
+            driver = webdriver.Chrome()
+            driver.get(request.url)
+            gd = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, "//select[@id='province']//option[@value='440']")))
+            gd.click()
+            button = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, "//input[@id='button']")))
+            button.click()
+            click_page = 0
+            try:
+                click_page = request.meta["click_page"]
+                print("click_page = ", click_page)
+            except:
+                print("no click_page")
+            if click_page > 0:
+                input_text = WebDriverWait(driver, 10).until(
+                    EC.presence_of_element_located((By.XPATH, "//input[@id='pageNo']")))
+                input_text.clear()
+                input_text.send_keys(click_page)
+                aHref = driver.find_elements_by_xpath("//div[@id='cen']//li[@class='pages']//a[last()]")
+                print("aHref = ", aHref)
+                aHref[0].click()
+
+            time.sleep(3)
+            source = driver.page_source
+            return HtmlResponse(url=driver.current_url, body=source, request=request, encoding='utf-8')
+        else:
+            response = self.process_personal(request)
+            return response
+
+    def process_personal(self, request):
         options = Options()
         options.add_argument('--headless')
         driver = webdriver.Chrome(chrome_options=options)
         # driver = webdriver.Chrome()
-        driver.get(request.url)
-        print("*"*120)
+        # driver.get(request.url)
+        print("*" * 120)
         page = -1
         type = '个贷'
         try:
@@ -141,10 +175,12 @@ class SeleniumDownloadMiddleware(object):
                 print("type", type)
                 if type == '公积金':
                     xpath = "//div[@id='gongjijing']//div[@class='page text_center']//a"
-                    driver.find_elements_by_xpath("//div[@class='vcc-index_tab_main loan_tab_clear_float']//a")[1].click()
+                    driver.find_elements_by_xpath("//div[@class='vcc-index_tab_main loan_tab_clear_float']//a")[
+                        1].click()
                     time.sleep(1)
                 else:
-                    driver.find_elements_by_xpath("//div[@class='vcc-index_tab_main loan_tab_clear_float']//a")[0].click()
+                    driver.find_elements_by_xpath("//div[@class='vcc-index_tab_main loan_tab_clear_float']//a")[
+                        0].click()
                     time.sleep(1)
                 button_list = driver.find_elements_by_xpath(xpath)
                 print(button_list)
@@ -168,6 +204,7 @@ class SeleniumDownloadMiddleware(object):
         source = driver.page_source
         response = HtmlResponse(url=driver.current_url, body=source, request=request, encoding='utf-8')
         return response
+
 
 def getFirstNumber(str):
     numList = re.findall(r"\d+", str)

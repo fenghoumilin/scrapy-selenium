@@ -21,15 +21,20 @@ class GdBankPipeline(object):
         self.cursor = self.conn.cursor()
         self._sql = None
     def process_item(self, item, spider):
-        self.cursor.execute(self.sql, (item['url'], item['network'], item['address'], item['service_time'], item['phone_number'], item['province'], item['type'], item['created_time']))
-        self.conn.commit()
-        return item
+        try:
+            self.cursor.execute(self.sql, (
+            item['url'], item['network'], item['address'], item['around'], item['service_time'], item['phone_number'],
+            item['province'], item['type'], item['created_time']))
+            self.conn.commit()
+            return item
+        except Exception as e:
+            print("insert error ", e)
     @property
     def sql(self):
         if not self._sql:
             self._sql = """
-            insert into network(id, url, network, address, service_time, phone_number, province, `type`, created_time) 
-            values (null, %s, %s, %s, %s, %s, %s, %s, %s)
+            insert into network(id, url, network, address, `around`, service_time, phone_number, province, `type`, created_time) 
+            values (null, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             return self._sql
         return self._sql

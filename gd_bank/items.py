@@ -13,6 +13,7 @@ class GdBankItem(scrapy.Item):
     # name = scrapy.Field()
     url = scrapy.Field()
     network = scrapy.Field()
+    around = scrapy.Field()
     address = scrapy.Field()
     service_time = scrapy.Field()
     phone_number = scrapy.Field()
