@@ -114,7 +114,7 @@ class SeleniumDownloadMiddleware(object):
 
     def process_request(self, request, spider):
 
-        if "http://tool.ccb.com/outlet/frontOprNodeQuery.gsp" in request.url:
+        if ("http://tool.ccb.com/outlet/frontOprNodeQuery.gsp" in request.url) or ("http://tool.ccb.com/frontATMNodeQuery.gsp" in request.url):
             print("start")
             options = Options()
             options.add_argument('--headless')
@@ -141,7 +141,6 @@ class SeleniumDownloadMiddleware(object):
                 aHref = driver.find_elements_by_xpath("//div[@id='cen']//li[@class='pages']//a[last()]")
                 print("aHref = ", aHref)
                 aHref[0].click()
-
             time.sleep(3)
             source = driver.page_source
             return HtmlResponse(url=driver.current_url, body=source, request=request, encoding='utf-8')
